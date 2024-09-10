@@ -1,0 +1,44 @@
+#### Playbook de Ansible:
+
+### Ejemplo de Playbook de Ansible para GNS3 Server v3.0.0rc1 (sin `pip`)
+
+```yaml
+---
+- name: Instalar GNS3 Server v3.0.0rc1
+  hosts: gns3_servers
+  become: yes
+  tasks:
+    - name: Instalar dependencias necesarias
+      apt:
+        name:
+          - python3
+          - python3-dev
+          - git
+          - wget
+          - unzip
+          - python3-pyqt5
+          - python3-pyqt5.qtsvg
+          - python3-pyqt5.qtwebkit
+        state: present
+
+    - name: Descargar GNS3 Server v3.0.0rc1
+      get_url:
+        url: https://github.com/GNS3/gns3-server/archive/refs/tags/v3.0.0rc1.tar.gz
+        dest: /opt/gns3-server.tar.gz
+
+    - name: Descomprimir GNS3 Server
+      unarchive:
+        src: /opt/gns3-server.tar.gz
+        dest: /opt/
+        remote_src: yes
+
+    - name: Crear un enlace simbólico para gns3server
+      command: ln -s /opt/gns3-server-3.0.0rc1/gns3server /usr/local/bin/gns3server
+      args:
+        removes: /usr/local/bin/gns3server
+
+    - name: Iniciar GNS3 Server
+      command: /usr/local/bin/gns3server
+      async: 1
+      poll: 0
+```
