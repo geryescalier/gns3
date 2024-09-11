@@ -1,6 +1,6 @@
 ### Playbook de Ansible para GNS3 Server v3.0.0rc1 
 
-```yaml
+
 ---
 
 - name: Instalar y ejecutar GNS3 en Docker
@@ -21,4 +21,4 @@
       command: >
         python3 -m pip install -e ./gns3-gui
 
-```
+
