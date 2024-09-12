@@ -1,50 +1,65 @@
-# Usa una imagen base de Ubuntu
-FROM ubuntu:20.04
+´´´
+Crear directorio
+mkdir gns3-docker
 
-# Establece el directorio de trabajo
-WORKDIR /gns3
+ingresa al directorio
+cd gns3-docker
 
-# Instala dependencias necesarias
+Crea/ingresa al archivo para editarlo con los datos para instalar server GNS3 
+nano Dockerfile
+´´´
+
+## Dockerfile 
+# Usar una imagen base de Debian
+FROM debian:12
+
+# Establecer variables de entorno
+ENV GNS3_VERSION=v3.0.0rc1
+
+# Instalar dependencias necesarias
 RUN apt-get update && \
     apt-get install -y \
-    wget \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg2 \
-    software-properties-common \
     python3 \
     python3-pip \
-    python3-pyqt5 \
-    python3-pyqt5.qtsvg \
-    python3-pyqt5.qtwebengine \
-    python3-pyqt5.qtwebchannel \
-    python3-pyqt5.qtmultimedia \
-    python3-pyqt5.qtquick \
-    python3-pyqt5.qtquickcontrols2 \
-    python3-pyqt5.qtquickcontrols \
-    ansible \
-    && apt-get clean
+    python3-setuptools \
+    python3-dev \
+    git \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Agrega la clave GPG de Docker
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+# Descargar y descomprimir GNS3 Server
+RUN curl -L -o gns3-server.tar.gz https://github.com/GNS3/gns3-server/archive/refs/tags/v3.0.0rc1.tar.gz && \
+    tar -xzf gns3-server.tar.gz && \
+    mv gns3-server-* gns3-server && \
+    rm gns3-server.tar.gz
 
-# Agrega el repositorio de Docker
-RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+# Instalar GNS3 Server
+WORKDIR /gns3-server
+RUN python3 setup.py install
 
-# Instala Docker
-RUN apt-get update && \
-    apt-get install -y docker-ce docker-ce-cli containerd.io && \
-    apt-get clean
+# Exponer el puerto de GNS3
+EXPOSE 3080
 
-# Descarga GNS3 GUI v3.0.0b3
-RUN wget https://github.com/GNS3/gns3-gui/archive/refs/tags/v3.0.0b3.tar.gz && \
-    tar -xzf v3.0.0b3.tar.gz && \
-    mv gns3-gui-3.0.0b3 gns3-gui && \
-    rm v3.0.0b3.tar.gz
 
-# Copia el playbook de Ansible al contenedor
-COPY install_gns3.yml /gns3/install_gns3.yml
+####
+Construir la imagen de Docker
+Desde el directorio donde se encuentra tu Dockerfile, ejecuta el siguiente comando para construir la imagen:
 
-# Ejecuta el playbook de Ansible
-CMD ["ansible-playbook", "install_gns3.yml"]
+docker build -t gns3-server .
+
+Ejecutar el contenedor de GNS3
+Una vez que la imagen se haya construido correctamente, puedes ejecutar el contenedor con el siguiente comando:
+
+docker run -d --name gns3-server -p 3080:3080 gns3-server
+
+Acceder a GNS3
+Abre tu navegador y accede a http://localhost:3080 para utilizar la interfaz web de GNS3.
+
+Asegúrate de que Docker esté instalado y en funcionamiento en tu OS
+Proximamente montar volumen para persistencia de datos
+
+####
+
+# Comando para ejecutar GNS3 Server
+CMD ["gns3server"]
