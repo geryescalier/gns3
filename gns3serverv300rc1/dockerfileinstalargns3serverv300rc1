@@ -41,8 +41,11 @@ RUN python3 setup.py install
 # Exponer el puerto de GNS3
 EXPOSE 3080
 
+# Comando para ejecutar GNS3 Server
+CMD ["gns3server"]
 
 ####
+
 Construir la imagen de Docker
 Desde el directorio donde se encuentra tu Dockerfile, ejecuta el siguiente comando para construir la imagen:
 
@@ -61,5 +64,4 @@ Proximamente montar volumen para persistencia de datos
 
 ####
 
-# Comando para ejecutar GNS3 Server
-CMD ["gns3server"]
+
